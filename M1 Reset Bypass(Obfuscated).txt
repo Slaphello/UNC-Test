@@ -1,22 +1,25 @@
--- It's not obfuscate lol :/
--- Don't let TSB Dev know this
+-- It's not obfuscate lol
 local a = game:GetService("UserInputService")
 local b = game:GetService("Players")
 local c = game:GetService("RunService")
 getgenv().DashNoEndLag = true
 local d = b.LocalPlayer
 local e = false
-local f = a.TouchEnabled
-local g = not f
-local h = false
-local i = {"Freeze", "Slowed", "WallCombo", "Ragdoll", "BeingLaunched", "BeingGrabbed"}
-local function j(k)
-    local l = k:FindFirstChild("Communicate")
-    if not l then
+local f = false
+local g = 0
+local h = a.TouchEnabled and not a.KeyboardEnabled
+local i = a.KeyboardEnabled
+local j = {"Freeze", "Slowed", "WallCombo", "Ragdoll", "BeingLaunched", "BeingGrabbed"}
+local function k(l)
+    if tick() - g < 0.001 then
         return
     end
-    local m = {{Dash = Enum.KeyCode.W, Key = Enum.KeyCode.Q, Goal = "KeyPress"}}
-    l:FireServer(unpack(m))
+    g = tick()
+    local m = l:FindFirstChild("Communicate")
+    if not m then
+        return
+    end
+    m:FireServer({Dash = Enum.KeyCode.W, Key = Enum.KeyCode.Q, Goal = "KeyPress"})
 end
 local function n(o, p)
     local q = o.MoveDirection
@@ -26,8 +29,8 @@ local function n(o, p)
     local r = p.CFrame:VectorToObjectSpace(q)
     return (math.deg(math.atan2(r.Z, r.X)) + 360) % 360
 end
-local function s(k, t)
-    t.MouseButton1Down:Connect(
+local function s(l, t)
+    t.Activated:Connect(
         function()
             if not getgenv().DashNoEndLag then
                 return
@@ -35,26 +38,29 @@ local function s(k, t)
             if e then
                 return
             end
-            local o = k:FindFirstChildOfClass("Humanoid")
-            local p = k:FindFirstChild("HumanoidRootPart")
-            if not o or not p then
+            local u = l:FindFirstChildOfClass("Humanoid")
+            local p = l:FindFirstChild("HumanoidRootPart")
+            if not u or not p then
                 return
             end
-            local u = n(o, p)
-            if u == 0 or u >= 225 and u < 315 then
-                j(k)
+            local v = n(u, p)
+            if v == 0 or v >= 225 and v < 315 then
+                k(l)
             end
         end
     )
 end
-local function v()
-    if not g or h then
+local function w()
+    if not i or f then
         return
     end
-    h = true
+    f = true
     a.InputBegan:Connect(
-        function(w, x)
-            if x or w.KeyCode ~= Enum.KeyCode.Q then
+        function(x, y)
+            if y then
+                return
+            end
+            if x.KeyCode ~= Enum.KeyCode.Q then
                 return
             end
             if not getgenv().DashNoEndLag then
@@ -63,100 +69,100 @@ local function v()
             if e then
                 return
             end
-            local k = d.Character
-            if not k then
+            if a:IsKeyDown(Enum.KeyCode.A) or a:IsKeyDown(Enum.KeyCode.S) or a:IsKeyDown(Enum.KeyCode.D) then
                 return
             end
-            if not (a:IsKeyDown(Enum.KeyCode.A) or a:IsKeyDown(Enum.KeyCode.S) or a:IsKeyDown(Enum.KeyCode.D)) then
-                j(k)
+            local l = d.Character
+            if l then
+                k(l)
             end
         end
     )
 end
-local function y()
-    local k = d.Character or d.CharacterAdded:Wait()
-    if f then
-        task.spawn(
-            function()
-                local z = d:WaitForChild("PlayerGui")
-                local A = z:WaitForChild("TouchGui", 5)
-                if not A then
-                    return
-                end
-                local B = A:WaitForChild("TouchControlFrame", 5)
-                if not B then
-                    return
-                end
-                local C = B:WaitForChild("JumpButton", 5)
-                if not C then
-                    return
-                end
-                local D = C:WaitForChild("DashButton", 5)
-                if D then
-                    s(k, D)
-                end
-            end
-        )
+local function z()
+    if not h then
+        return
     end
+    task.spawn(
+        function()
+            local A = d:WaitForChild("PlayerGui", 5)
+            if not A then
+                return
+            end
+            local B = A:WaitForChild("TouchGui", 5)
+            if not B then
+                return
+            end
+            local C = B:WaitForChild("TouchControlFrame", 5)
+            if not C then
+                return
+            end
+            local D = C:WaitForChild("JumpButton", 5)
+            if not D then
+                return
+            end
+            local E = D:FindFirstChild("DashButton")
+            if E and d.Character then
+                s(d.Character, E)
+            end
+        end
+    )
 end
 c.Heartbeat:Connect(
     function()
-        local k = d.Character
-        if k then
-            local E = false
-            for F, G in ipairs(i) do
-                if k:FindFirstChild(G) then
-                    E = true
-                    break
-                end
-            end
-            e = E
-        else
+        local l = d.Character
+        if not l then
             e = false
+            return
         end
-    end
-)
-local H = getrawmetatable(game)
-local I = H.__namecall
-setreadonly(H, false)
-H.__namecall =
-    newcclosure(
-    function(self, ...)
-        local J = getnamecallmethod()
-        local m = {...}
-        if J == "FireServer" and tostring(self) == "Communicate" then
-            local K = m[1]
-            if type(K) == "table" then
-                local L = K.Key
-                local M = K.Dash
-                local N = K.Goal
-                local O = L == Enum.KeyCode.Q and (M == Enum.KeyCode.A or M == Enum.KeyCode.D) and N == "KeyPress"
-                if O and not e then
-                    return nil
-                end
+        for F, G in ipairs(j) do
+            if l:FindFirstChild(G) then
+                e = true
+                return
             end
         end
-        return I(self, ...)
+        e = false
     end
 )
-setreadonly(H, true)
-v()
-task.spawn(
+pcall(
     function()
-        pcall(y)
-    end
-)
-d.CharacterAdded:Connect(
-    function()
-        task.wait(0.1)
-        task.spawn(
-            function()
-                pcall(y)
+        if not getrawmetatable or not newcclosure then
+            return
+        end
+        local H = getrawmetatable(game)
+        if not H or not H.__namecall then
+            return
+        end
+        local I = H.__namecall
+        setreadonly(H, false)
+        H.__namecall =
+            newcclosure(
+            function(self, ...)
+                local J = getnamecallmethod()
+                local K = {...}
+                if J == "FireServer" and tostring(self) == "Communicate" then
+                    local L = K[1]
+                    if type(L) == "table" then
+                        if
+                            L.Key == Enum.KeyCode.Q and (L.Dash == Enum.KeyCode.A or L.Dash == Enum.KeyCode.D) and
+                                L.Goal == "KeyPress" and
+                                not e
+                         then
+                            return nil
+                        end
+                    end
+                end
+                return I(self, ...)
             end
         )
+        setreadonly(H, true)
     end
 )
-game:GetService("StarterGui"):SetCore(
-    "SendNotification",
-    {Title = "Executed", Text = "Thanks for using :/", Duration = 3}
+w()
+z()
+d.CharacterAdded:Connect(
+    function()
+        task.wait(0.15)
+        z()
+    end
 )
