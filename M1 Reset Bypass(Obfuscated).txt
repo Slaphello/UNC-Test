@@ -8,7 +8,7 @@ local e = false
 local f = false
 local g = 0
 local h = a.TouchEnabled and not a.KeyboardEnabled
-local i = a.KeyboardEnabled
+local i = a.KeyboardEnabled and not a.TouchEnabled
 local j = {"Freeze", "Slowed", "WallCombo", "Ragdoll", "BeingLaunched", "BeingGrabbed"}
 local function k(l)
     if tick() - g < 0.001 then
